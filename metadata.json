@@ -1,0 +1,5 @@
+{
+  "name": "Church Management System",
+  "description": "A comprehensive, offline-first desktop application for managing church members, attendance, finances, and events with role-based access control.",
+  "requestFramePermissions": []
+}
