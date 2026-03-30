@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { subscribeToCollection, addDocument } from '../services/firestoreService';
-import { Send, MessageSquare, Hash } from 'lucide-react';
+import { Send, MessageSquare, Hash, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [channel, setChannel] = useState('General');
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Add this state
   const scrollRef = useRef<HTMLDivElement>(null);
   const user = JSON.parse(localStorage.getItem('church_mgmt_user') || '{}');
 
@@ -44,7 +44,7 @@ const Chat: React.FC = () => {
         senderName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
         content: newMessage,
         channel: channel,
-        branchId: 'main' // Default for now
+        branchId: 'main'
       });
       setNewMessage('');
     } catch (error) {
@@ -55,10 +55,25 @@ const Chat: React.FC = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-3xl shadow-2xl overflow-hidden border border-blue-100">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 bg-blue-50 border-r border-blue-100 flex flex-col">
+        {/* Toggle button - positioned absolutely */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="absolute left-4 top-20 z-10 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+          style={{ marginLeft: sidebarOpen ? '16rem' : '0.5rem' }}
+        >
+          {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+        </button>
+
+        {/* Sidebar with animation */}
+        <div 
+          className={`
+            bg-blue-50 border-r border-blue-100 flex flex-col
+            transition-all duration-300 ease-in-out
+            ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}
+          `}
+        >
           <div className="p-6 border-b border-blue-100">
-            <h3 className="text-xs font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-xs font-black text-blue-900 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
               <Hash size={14} className="text-blue-600" /> Channels
             </h3>
           </div>
@@ -67,7 +82,7 @@ const Chat: React.FC = () => {
               <button
                 key={ch}
                 onClick={() => setChannel(ch)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[11px] font-bold transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap ${
                   channel === ch 
                     ? 'bg-blue-600 text-white shadow-lg scale-[1.02]' 
                     : 'text-blue-700 hover:bg-blue-100'
@@ -80,8 +95,18 @@ const Chat: React.FC = () => {
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-white">
+        {/* Chat Area - adjust padding based on sidebar state */}
+        <div className="flex-1 flex flex-col bg-white relative">
+          {/* Optional: Add a mobile menu button */}
+          <div className="absolute top-4 left-4 lg:hidden">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="bg-blue-600 text-white p-2 rounded-lg shadow-lg"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+
           <div className="p-6 border-b border-blue-100 flex items-center justify-between bg-blue-50/30">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md">
