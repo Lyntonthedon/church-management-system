@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Wallet, Calendar, Settings as SettingsIcon, LogOut, ChevronRight, 
-  Database, Waves, HeartHandshake, CheckSquare, Megaphone, Package, Heart, BookOpen, Award
+  Database, Waves, HeartHandshake, CheckSquare, Megaphone, Package, Heart, BookOpen, Award,
+  Menu, X
 } from 'lucide-react';
 import { subscribeToCollection, updateDocument } from './services/firestoreService';
 import Dashboard from './pages/Dashboard';
@@ -28,6 +28,7 @@ const App: React.FC<{user: any, onLogout: () => void}> = ({ user, onLogout }) =>
   const location = useLocation();
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [showNotifications, setShowNotifications] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(true); // Add this state for sidebar toggle
 
   React.useEffect(() => {
     if (!user?.uid) return;
@@ -78,7 +79,22 @@ const App: React.FC<{user: any, onLogout: () => void}> = ({ user, onLogout }) =>
 
   return (
     <div className="flex h-screen bg-blue-900 overflow-hidden">
-      <aside className="w-64 bg-blue-50 border-r border-blue-200 flex flex-col shadow-2xl z-20">
+      {/* Toggle Button - Fixed position on the left edge */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-1/2 transform -translate-y-1/2 z-30 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-r-xl shadow-lg transition-all duration-200 hover:scale-105"
+        style={{ left: sidebarOpen ? '256px' : '0px' }}
+        title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+      >
+        {sidebarOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Sidebar */}
+      <aside 
+        className={`bg-blue-50 border-r border-blue-200 flex flex-col shadow-2xl z-20 transition-all duration-300 ease-in-out ${
+          sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
+        }`}
+      >
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
@@ -94,10 +110,16 @@ const App: React.FC<{user: any, onLogout: () => void}> = ({ user, onLogout }) =>
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <Link key={item.path} to={item.path} className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700 hover:bg-blue-100'}`}>
+                <Link 
+                  key={item.path} 
+                  to={item.path} 
+                  className={`flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 group ${
+                    isActive ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
                   <div className="flex items-center gap-3">
                     <Icon size={16} className={isActive ? 'text-white' : 'group-hover:text-blue-800'} />
-                    <span className="font-bold text-[11px]">{item.label}</span>
+                    <span className="font-bold text-[11px] whitespace-nowrap">{item.label}</span>
                   </div>
                   {isActive && <ChevronRight size={12} />}
                 </Link>
@@ -120,8 +142,19 @@ const App: React.FC<{user: any, onLogout: () => void}> = ({ user, onLogout }) =>
           </button>
         </div>
       </aside>
+
+      {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-blue-100">
         <header className="h-14 bg-blue-50 border-b border-blue-200 flex items-center justify-between px-8 z-10 shadow-sm">
+          {/* Mobile menu button - only visible when sidebar is closed */}
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 bg-blue-600 text-white rounded-lg shadow-md"
+            >
+              <Menu size={20} />
+            </button>
+          )}
           <h2 className="text-xs font-black text-blue-500 uppercase tracking-[0.2em]">
             {allNavItems.find(i => i.path === location.pathname)?.label || 'System Core'}
           </h2>
@@ -197,4 +230,5 @@ const App: React.FC<{user: any, onLogout: () => void}> = ({ user, onLogout }) =>
     </div>
   );
 };
+
 export default App;
